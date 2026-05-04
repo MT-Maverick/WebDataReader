@@ -61,7 +61,6 @@ with st.expander("Column details"):
     )
     st.dataframe(details, use_container_width=True)
 
-<<<<<<< HEAD
 st.markdown("### Complete Data Summary")
 
 full_summary = df.describe(include='all').transpose()
@@ -113,29 +112,11 @@ def categorical_impact_analyzer(df):
 
 # Usage:
 categorical_impact_analyzer(df)
-=======
-numeric_df = df.select_dtypes(include="number")
-if not numeric_df.empty:
-    st.markdown("### Numeric summary")
-    st.dataframe(numeric_df.describe().transpose(), use_container_width=True)
-
-    numeric_column = st.selectbox("Select numeric column to chart", numeric_df.columns)
-    if numeric_column:
-        st.bar_chart(df[numeric_column].dropna())
-else:
-    st.info("No numeric columns found. Upload a spreadsheet with numbers to enable charts.")
->>>>>>> 0a9eb59eaeb425fec5eee3f0e4595e63252a542b
 
 st.markdown("---")
 st.markdown("### Hosting notes")
 st.markdown(
     """
-<<<<<<< HEAD
     - Use the Node upload app at http://localhost:3000 to place spreadsheet files into the shared `uploads/` folder.
-=======
-    - Run the dashboard with `streamlit run python/streamlit_app.py`
-    - Use the Node upload app at `http://localhost:3000` to place spreadsheet files into the shared `uploads/` folder.
-    - To host behind IIS, configure IIS Application Request Routing (ARR) or a reverse proxy to forward a public IIS URL to the local Streamlit service on `http://localhost:8501`.
->>>>>>> 0a9eb59eaeb425fec5eee3f0e4595e63252a542b
     """
 )
