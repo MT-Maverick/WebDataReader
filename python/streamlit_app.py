@@ -61,23 +61,62 @@ with st.expander("Column details"):
     )
     st.dataframe(details, use_container_width=True)
 
-numeric_df = df.select_dtypes(include="number")
-if not numeric_df.empty:
-    st.markdown("### Numeric summary")
-    st.dataframe(numeric_df.describe().transpose(), use_container_width=True)
+st.markdown("### Complete Data Summary")
 
-    numeric_column = st.selectbox("Select numeric column to chart", numeric_df.columns)
-    if numeric_column:
-        st.bar_chart(df[numeric_column].dropna())
-else:
-    st.info("No numeric columns found. Upload a spreadsheet with numbers to enable charts.")
+full_summary = df.describe(include='all').transpose()
+st.dataframe(full_summary, use_container_width=True)
+
+
+def categorical_impact_analyzer(df):
+    st.write("## 🎯 Categorical Impact Analysis")
+    
+    # 1. Identify the column types
+    cat_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+    num_cols = df.select_dtypes(include=['number']).columns.tolist()
+
+    if not cat_cols or not num_cols:
+        st.warning("Need both categorical and numerical columns for this analysis.")
+        return
+
+    # 2. Let the user pick the "Metric of Interest" (The Y-Axis)
+    # This prevents the app from guessing wrong
+    target_num = st.selectbox("Select the numeric metric to analyze:", num_cols)
+    
+    # Optional: Let them choose the aggregation method
+    stat_type = st.radio("Show:", ["Average", "Total Sum"], horizontal=True)
+
+    st.divider()
+
+    # 3. Create Tabs for each Category to keep the page clean
+    if cat_cols:
+        tabs = st.tabs(cat_cols)  # Creates one tab per categorical column
+
+        for i, col in enumerate(cat_cols):
+            with tabs[i]:
+                st.write(f"### {target_num} by {col}")
+                
+                # Perform the grouping
+                if stat_type == "Average":
+                    analysis = df.groupby(col)[target_num].mean().sort_values(ascending=False)
+                    label = f"Average {target_num}"
+                else:
+                    analysis = df.groupby(col)[target_num].sum().sort_values(ascending=False)
+                    label = f"Total {target_num}"
+
+                # Render the chart
+                st.bar_chart(analysis)
+                
+                # Show a small data table snippet for the curious user
+                with st.expander("View raw numbers"):
+                    st.dataframe(analysis)
+
+# Usage:
+categorical_impact_analyzer(df)
 
 st.markdown("---")
 st.markdown("### Hosting notes")
 st.markdown(
     """
-    - Run the dashboard with `streamlit run python/streamlit_app.py`
-    - Use the Node upload app at `http://localhost:3000` to place spreadsheet files into the shared `uploads/` folder.
-    - To host behind IIS, configure IIS Application Request Routing (ARR) or a reverse proxy to forward a public IIS URL to the local Streamlit service on `http://localhost:8501`.
+    - Use the Node upload app at http://localhost:3000 to place spreadsheet files into the shared `uploads/` folder.
     """
 )
