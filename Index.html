@@ -3,7 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<<<<<<< HEAD
     <link rel="stylesheet" href="styles.css"/>
     <title>File Sharing Web App</title>
   </head>
@@ -12,151 +11,6 @@
     <main class="page">
       <section class="card">
         <h1>Upload Portal</h1>
-=======
-    <title>File Sharing Web App</title>
-    <style>
-      :root {
-        --bg: #eef5ff;
-        --surface: #ffffff;
-        --primary: #3b82f6;
-        --primary-dark: #1d4ed8;
-        --text: #0f172a;
-        --muted: #475569;
-        --border: rgba(15, 23, 42, 0.12);
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 35%),
-          linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
-        color: var(--text);
-      }
-
-      .page {
-        min-height: 100vh;
-        padding: 40px 20px;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-      }
-
-      .card {
-        width: min(760px, 100%);
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 24px;
-        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
-        padding: 36px;
-      }
-
-      h1 {
-        margin: 0 0 8px;
-        font-size: clamp(2rem, 4vw, 3rem);
-        letter-spacing: -0.03em;
-      }
-
-      p.lead {
-        margin: 0 0 28px;
-        color: var(--muted);
-        line-height: 1.65;
-      }
-
-      .upload-form {
-        display: grid;
-        gap: 16px;
-        margin-bottom: 28px;
-      }
-
-      .upload-form input[type="file"] {
-        padding: 14px 12px;
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        background: #f8fafc;
-        cursor: pointer;
-      }
-
-      .upload-form button {
-        width: fit-content;
-        padding: 14px 24px;
-        border: none;
-        border-radius: 14px;
-        background: var(--primary);
-        color: white;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background-color 170ms ease;
-      }
-
-      .upload-form button:hover {
-        background: var(--primary-dark);
-      }
-
-      .status {
-        min-height: 22px;
-        color: var(--muted);
-        font-size: 0.95rem;
-      }
-
-      .dashboard-link {
-        margin-top: 8px;
-      }
-
-      .dashboard-link a {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 16px;
-        border-radius: 14px;
-        background: rgba(59, 130, 246, 0.12);
-        color: var(--primary-dark);
-        text-decoration: none;
-        font-weight: 600;
-      }
-
-      .dashboard-link a:hover {
-        background: rgba(59, 130, 246, 0.18);
-      }
-
-      .file-list {
-        display: grid;
-        gap: 12px;
-      }
-
-      .file-item {
-        padding: 18px 20px;
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        background: #f8fbff;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .file-item a {
-        color: var(--primary);
-        text-decoration: none;
-        font-weight: 600;
-      }
-
-      .file-item a:hover {
-        text-decoration: underline;
-      }
-
-      .empty-state {
-        color: var(--muted);
-      }
-    </style>
-  </head>
-  <body>
-    <main class="page">
-      <section class="card">
-        <h1>File Sharing Web App</h1>
->>>>>>> 0a9eb59eaeb425fec5eee3f0e4595e63252a542b
         <p class="lead">Upload a file and get a download link instantly. Your files are stored locally in the server's <code>uploads/</code> folder.</p>
 
         <form id="file-form" class="upload-form">
@@ -202,9 +56,51 @@
           link.textContent = file.name;
           link.target = "_blank";
 
+          const removeButton = document.createElement("button");
+          removeButton.type = "button";
+          removeButton.textContent = "Remove";
+          removeButton.className = "remove-button";
+          removeButton.addEventListener("click", () => removeFile(file.id));
+
           item.appendChild(link);
+          item.appendChild(removeButton);
           fileList.appendChild(item);
         });
+      };
+
+      const fetchFiles = async () => {
+        try {
+          const response = await fetch("/files");
+          if (!response.ok) {
+            throw new Error("Unable to load file list.");
+          }
+          const files = await response.json();
+          renderFiles(files);
+        } catch (error) {
+          fileList.innerHTML = "Unable to load uploaded files.";
+          fileList.classList.add("empty-state");
+        }
+      };
+
+      const removeFile = async (fileId) => {
+        statusText.textContent = "Removing file...";
+        try {
+          const response = await fetch(`/files/${encodeURIComponent(fileId)}`, {
+            method: "DELETE",
+          });
+
+          if (!response.ok) {
+            const data = await response.json().catch(() => null);
+            statusText.textContent = data?.error || "Unable to remove file.";
+            return;
+          }
+
+          const files = await response.json();
+          renderFiles(files);
+          statusText.textContent = "File removed.";
+        } catch (error) {
+          statusText.textContent = "Unable to remove file. Check the server and try again.";
+        }
       };
 
       fileForm.addEventListener("submit", async (event) => {
@@ -244,6 +140,8 @@
           fileForm.querySelector("button").disabled = false;
         }
       });
+
+      window.addEventListener("DOMContentLoaded", fetchFiles);
     </script>
   </body>
 </html>

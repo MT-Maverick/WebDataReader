@@ -78,7 +78,21 @@
       .upload-form button:hover {
         background: var(--primary-dark);
       }
+      .remove-button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 14px;
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background-color 170ms ease;
 
+      }
+      .remove-button :hover {
+        background: var(--primary-dark);
+
+      }
       .status {
         min-height: 22px;
         color: var(--muted);
@@ -104,7 +118,13 @@
       .dashboard-link a:hover {
         background: rgba(59, 130, 246, 0.18);
       }
-
+      #fileInput{
+        padding: 14px 12px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: #6eb0f1;
+        cursor: pointer;
+      }
       .file-list {
         display: grid;
         gap: 12px;

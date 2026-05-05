@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 from pathlib import Path
+import requests
 
 UPLOAD_DIR = Path(__file__).resolve().parent.parent / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -16,10 +17,36 @@ st.markdown(
     """
 )
 
-file_list = sorted(
-    [path for path in UPLOAD_DIR.iterdir() if path.suffix.lower() in {".csv", ".xlsx", ".xls"}],
-    key=lambda path: path.name,
-)
+@st.cache_data(ttl=10)  # Refresh every 10 seconds
+def get_uploaded_files():
+    try:
+        response = requests.get("http://localhost:3000/files", timeout=5)
+        response.raise_for_status()
+        files = response.json()
+        # Filter for spreadsheet files and construct paths
+        spreadsheet_files = []
+        for file in files:
+            if file['name'].lower().endswith(('.csv', '.xlsx', '.xls')):
+                file_path = UPLOAD_DIR / file['id']
+                if file_path.exists():
+                    spreadsheet_files.append(file_path)
+        return sorted(spreadsheet_files, key=lambda path: path.name)
+    except Exception as e:
+        st.warning(f"Unable to fetch file list from upload service: {e}. Falling back to local scan.")
+        # Fallback to local directory scan
+        return sorted(
+            [path for path in UPLOAD_DIR.iterdir() if path.suffix.lower() in {".csv", ".xlsx", ".xls"}],
+            key=lambda path: path.name,
+        )
+
+file_list = get_uploaded_files()
+
+if not file_list:
+    st.info("No spreadsheet files found in the shared `uploads/` directory.")
+    st.markdown(
+        "Upload a spreadsheet first through the Node app at `http://localhost:3000` or place files in the `uploads/` folder."
+    )
+    st.stop()
 
 if not file_list:
     st.info("No spreadsheet files found in the shared `uploads/` directory.")
