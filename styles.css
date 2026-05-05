@@ -118,13 +118,7 @@
       .dashboard-link a:hover {
         background: rgba(59, 130, 246, 0.18);
       }
-      #fileInput{
-        padding: 14px 12px;
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        background: #6eb0f1;
-        cursor: pointer;
-      }
+      
       .file-list {
         display: grid;
         gap: 12px;
